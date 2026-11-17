@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lab Maya · Teorema Pythagoras</title>
+<style>
+:root{--ink:#1e2742;--muted:#5a6485;--line:#e6eaf5;--brand:#4a5ee0;--ok:#0f7d62}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#e8ecf5;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;color:var(--ink)}
+#viewport{position:fixed;inset:0;background:radial-gradient(1200px 800px at 18% 8%,#eaf1ff,#f7f3ee 48%,#eef4f7)}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform:translate(-50%,-50%);transform-origin:center;background:linear-gradient(160deg,#fbfcff,#f4f1fb 52%,#eef7f4);border-radius:22px;overflow:hidden;box-shadow:0 30px 70px rgba(35,52,96,.18);display:flex;flex-direction:column}
+.topbar{height:64px;flex:0 0 64px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.75)}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(140deg,#5b6ee1,#8a7cf0);color:#fff;font-size:19px;font-weight:900}
+.brand h1{font-size:16.5px;font-weight:800}.brand p{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
+.progwrap{width:290px}.proglabel{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px}.proglabel b{color:var(--brand)}
+.progbar{height:10px;border-radius:99px;background:#e6ebf7;overflow:hidden}
+#progFill{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#6d8bff,#8a7cf0,#2fb8a6);transition:width .4s}
+.tabs{height:52px;flex:0 0 52px;display:flex;align-items:center;gap:6px;padding:0 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.55)}
+.tab{display:inline-flex;align-items:center;gap:7px;min-height:42px;padding:0 13px;border-radius:11px;border:1px solid transparent;background:transparent;cursor:pointer;font:700 12.5px inherit;font-family:inherit;color:var(--muted);white-space:nowrap}
+.tab:hover{background:#eef2fd}.tab.on{background:linear-gradient(135deg,#5b6ee1,#8a7cf0);color:#fff}
+.tab .num{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:11px;background:#e7ecfa}.tab.on .num{background:rgba(255,255,255,.28)}
+.tick{display:none;font-weight:900;color:#17a884}.tab.done .tick{display:inline}.tab.on .tick{color:#c8ffe9}
+.content{flex:1;min-height:0;padding:14px}
+.panel{display:none;height:100%;gap:0;grid-template-columns:var(--c1,296px) 14px minmax(0,1fr) 14px var(--c3,300px)}
+.panel.on{display:grid}#p6{grid-template-columns:1fr}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:0 8px 22px rgba(35,52,96,.06);display:flex;flex-direction:column;overflow:hidden;min-height:0;min-width:0}
+.card-h{padding:10px 14px;font-size:12px;font-weight:800;color:var(--muted);border-bottom:1px solid #f0f3fa;background:#fbfcff;display:flex;align-items:center;gap:8px}
+.hint{margin-left:auto;font-size:10.5px;font-weight:700;color:#646e8a;background:#f2f5fd;padding:3px 8px;border-radius:99px}
+.card-b{padding:12px 14px;overflow:auto;flex:1;min-height:0}
+.canvas-wrap{flex:1;min-height:0;padding:8px}
+.canvas-wrap svg{width:100%;height:100%;touch-action:none;user-select:none;-webkit-user-select:none;display:block}
+.ctl{margin-bottom:13px}
+.ctl>label{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.val{background:#eef2ff;color:var(--brand);padding:2px 9px;border-radius:8px;font-size:12px;font-weight:800}
+/* slider: area sentuh 44px, thumb 28px */
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;cursor:pointer;display:block;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:99px;background:linear-gradient(90deg,#c3d3ff,#e6ecff)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;border-radius:50%;background:#fff;border:4px solid #5b6ee1;margin-top:-10px;box-shadow:0 2px 7px rgba(60,80,180,.4)}
+input[type=range]::-moz-range-track{height:8px;border-radius:99px;background:#dbe3ff}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid #5b6ee1}
+.btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;min-height:44px;border:none;border-radius:11px;padding:0 14px;font:800 13px inherit;font-family:inherit;color:#fff;cursor:pointer;background:linear-gradient(135deg,#5b6ee1,#8a7cf0);box-shadow:0 8px 18px rgba(91,110,225,.3)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:#f2f5ff;color:var(--brand);border:1px solid #dbe3ff;box-shadow:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{display:inline-flex;align-items:center;min-height:40px;padding:0 13px;border-radius:99px;background:#f3f6fd;border:1px solid #dfe6f8;font:700 12px inherit;font-family:inherit;color:var(--muted);cursor:pointer}
+.chip.on{background:#e8fbf4;border-color:#a9e6cf;color:#12866a}
+.chip.sel{background:#eef2ff;border-color:#9fb0f5;color:var(--brand)}
+.trio{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.trio input{width:100%;height:46px;border-radius:11px;border:1.5px solid #dde4f5;background:#fbfcff;font:800 18px inherit;font-family:inherit;text-align:center;color:#3a4570;outline:none;-moz-appearance:textfield}
+.trio input::-webkit-outer-spin-button,.trio input::-webkit-inner-spin-button{-webkit-appearance:none}
+.trio input:focus{border-color:#8a9cf0}
+.steps{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.step{font-size:10.5px;font-weight:800;padding:4px 8px;border-radius:8px;background:#f1f4fb;color:#646e8a;border:1px solid #e7ecf7}
+.step.active{background:#fff4e0;border-color:#ffd79a;color:#9a5f0f}.step.done{background:#e9faf3;border-color:#a9e6cf;color:#12866a}
+.eq{background:linear-gradient(135deg,#f3f6ff,#fbf6ff);border:1px solid #e4e9fb;border-radius:12px;padding:10px 12px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.75;color:#3a4570}
+.eq .hi{color:#4a5ee0;font-weight:800}.eq .big{font-size:14.5px;font-weight:900;color:#12866a}.eq .mut{color:#646e8a}
+.tbl{width:100%;border-collapse:collapse;font-size:11.5px}
+.tbl th{background:#f4f7fe;color:var(--muted);font-weight:800;padding:6px 5px;border-bottom:1px solid #e8edf9;font-size:10.5px}
+.tbl td{padding:6px 5px;text-align:center;border-bottom:1px solid #f2f5fc;font-weight:600}
+.tbl tr.pick{cursor:pointer}.tbl tr.pick:hover td{background:#eef2ff}
+.tblwrap{margin-top:10px;border:1px solid #eef2fa;border-radius:11px;max-height:150px;overflow-y:auto}
+.note{margin-top:10px;font-size:11.5px;line-height:1.55;color:var(--muted);background:#f6fbf9;border:1px dashed #bfe6da;border-radius:11px;padding:9px 11px;font-weight:600}
+.note.ok{background:#eefbf5;border-color:#a7e4cf;color:#12795f}.note.warn{background:#fff8ec;border-color:#ffdca8;color:#8a5a0e}.note.bad{background:#fdf0f2;border-color:#f6c6ce;color:#b23a4c}
+.verdict{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:12px;font-size:13px;font-weight:900;border:1px solid}
+.verdict.ok{background:#e9faf3;color:#0f7d62;border-color:#a9e6cf}.verdict.bad{background:#fdf0f2;color:#b23a4c;border-color:#f6c6ce}.verdict.mid{background:#fff8ec;color:#8a5a0e;border-color:#ffdca8}
+.verdict .dot{width:10px;height:10px;border-radius:50%;background:currentColor}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed #eef2fa;font-size:12px}.kv span{color:var(--muted);font-weight:700}.kv b{font-weight:900}
+.barrow{display:grid;grid-template-columns:62px 1fr 44px;align-items:center;gap:8px;margin-top:8px}
+.barrow span{font-size:11px;font-weight:800;color:var(--muted)}.barrow .bar{height:11px;border-radius:99px;background:#eef2fb;overflow:hidden}
+.barrow .bar i{display:block;height:100%;border-radius:99px;transition:width .3s;background:linear-gradient(90deg,#6d8bff,#8a7cf0)}.barrow .bar i.c{background:linear-gradient(90deg,#2fb8a6,#7fe0c9)}
+.barrow b{font-size:11px;text-align:right}
+.modebtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.modebtn{min-height:52px;border-radius:12px;border:1.5px solid #e2e8f7;background:#fbfcff;font:800 12px inherit;font-family:inherit;color:var(--muted);cursor:pointer}
+.modebtn small{display:block;font-size:10px;font-weight:700;color:#646e8a}
+.modebtn.on{background:#eef2ff;border-color:#9fb0f5;color:var(--brand)}
+.concl-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.concl{padding:13px;border-radius:14px;border:1px solid #eef2fa;background:#fbfcff;position:relative;min-height:170px}
+.concl.locked{opacity:.5}.concl .cn{font-size:10.5px;font-weight:900;color:#646e8a}
+.concl h4{font-size:13px;font-weight:800;margin:5px 0 7px}
+.concl .f{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;font-weight:800;color:var(--brand);background:#eef2ff;border-radius:8px;padding:5px 7px;display:inline-block;margin-bottom:7px}
+.concl p{font-size:11px;line-height:1.5;color:var(--muted);font-weight:600}.concl .badge{position:absolute;top:10px;right:10px}
+.finalbanner{margin-top:14px;border-radius:16px;padding:16px 20px;display:flex;align-items:center;gap:16px;background:linear-gradient(120deg,#eef2ff,#f6f0ff 45%,#eafaf4);border:1px solid #e0e7fb}
+.fb-ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:linear-gradient(140deg,#5b6ee1,#8a7cf0);flex:0 0 auto}
+.finalbanner h3{font-size:14px;font-weight:900;margin-bottom:3px}.finalbanner p{font-size:12px;color:var(--muted);font-weight:600;line-height:1.5}
+.tps{margin-top:12px;font-size:11px;line-height:1.6;color:var(--muted);font-weight:600}
+body{font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid #8a7cf0;outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.split{position:relative;display:flex;align-items:center;justify-content:center;cursor:col-resize;touch-action:none;outline:none}
+.split::before{content:"";position:absolute;top:0;bottom:0;left:-12px;right:-12px}
+.split::after{content:"";width:5px;height:56px;border-radius:99px;background:#cdd6ee;transition:background .15s}
+.split:hover::after,.split.drag::after,.split:focus-visible::after{background:#6d82ee}
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+  <header class="topbar">
+    <div class="brand"><div class="logo">△</div>
+      <div><h1>Lab Maya · Teorema Pythagoras</h1><p>Matematika · Fase D / Kelas 8 · Geometri: Segitiga dan Teorema Pythagoras</p></div></div>
+    <div class="progwrap"><div class="proglabel"><span>Progres Eksperimen</span><b id="progTxt">0 / 5</b></div>
+      <div class="progbar"><i id="progFill"></i></div></div>
+  </header>
+  <nav class="tabs">
+    <button class="tab on" data-panel="p1"><span class="num">1</span>Eksplorasi Teorema<span class="tick">✓</span></button>
+    <button class="tab" data-panel="p2"><span class="num">2</span>Tripel Pythagoras<span class="tick">✓</span></button>
+    <button class="tab" data-panel="p3"><span class="num">3</span>Jenis Segitiga<span class="tick">✓</span></button>
+    <button class="tab" data-panel="p4"><span class="num">4</span>Segitiga Istimewa<span class="tick">✓</span></button>
+    <button class="tab" data-panel="p5"><span class="num">5</span>Kontekstual<span class="tick">✓</span></button>
+    <button class="tab" data-panel="p6"><span class="num">★</span>Kesimpulan</button>
+  </nav>
+  <main class="content" id="main"></main>
+</div></div>
+
+<script>
+(function(){
+"use strict";
+/* ===== UTILITAS ===== */
+var $=function(s){return document.querySelector(s)};
+var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s))};
+function clamp(v,lo,hi){return Math.min(hi,Math.max(lo,v))}
+function fmt(n){var r=Math.round(n*100)/100;return Math.abs(r-Math.round(r))<1e-9?String(Math.round(r)):r.toFixed(2).replace(/\.?0+$/,'')}
+function setSteps(sel,n){Array.prototype.forEach.call($(sel).children,function(c,i){c.classList.toggle('done',i<n-1);c.classList.toggle('active',i===n-1)})}
+function steps(id,labels){return '<div class="steps" id="'+id+'">'+labels.map(function(l,i){return '<span class="step">'+(i+1)+' '+l+'</span>'}).join('')+'</div>'}
+function slider(id,min,max,val){return '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="1" value="'+val+'">'}
+function ctlSlider(lab,vid,id,min,max,val){return '<div class="ctl"><label>'+lab+' <span class="val" id="'+vid+'">'+val+'</span></label>'+slider(id,min,max,val)+'</div>'}
+
+/* ===== KERANGKA PANEL (3 kolom: Kontrol | Kanvas | Hasil) ===== */
+function SPL(n){return '<div class="split" data-s="'+n+'" role="separator" aria-orientation="vertical" tabindex="0" title="Tarik untuk mengubah ukuran · klik dua kali untuk mengembalikan" aria-label="'+(n===1?'Ubah lebar Kontrol Eksperimen':'Ubah lebar Hasil Pengamatan')+'"></div>'}
+function shell(id,ctrl,hint,res,on){
+  return '<section class="panel'+(on?' on':'')+'" id="'+id+'"><aside class="card"><div class="card-h">🎛️ Kontrol Eksperimen</div><div class="card-b">'+ctrl+
+    '</div></aside>'+SPL(1)+'<div class="card"><div class="card-h">📐 Kanvas Simulasi<span class="hint">'+hint+'</span></div><div class="canvas-wrap"><svg id="svg'+id.slice(1)+'" xmlns="http://www.w3.org/2000/svg"></svg></div></div>'+
+    SPL(2)+'<aside class="card"><div class="card-h">🔎 Hasil Pengamatan</div><div class="card-b">'+res+'</div></aside></section>';
+}
+var h='';
+h+=shell('p1',
+  '<div class="ctl"><label>Alat bantu pada sisi</label><div class="chips" id="chips1"><span class="chip sel" data-t="sq">Persegi luas</span><span class="chip" data-t="grid">Kisi satuan</span><span class="chip" data-t="none">Polos</span></div></div>'+
+  ctlSlider('Sisi tegak <b>a</b>','v1a','s1a',3,12,3)+ctlSlider('Sisi datar <b>b</b>','v1b','s1b',3,12,4)+
+  '<div class="ctl"><button class="btn" id="btn1play">▶ Animasikan Bukti Luas</button></div><div class="ctl"><button class="btn ghost" id="btn1acak">🎲 Acak Nilai Sisi</button></div>'+steps('steps1',['Atur','Amati','Catat','Simpulkan']),
+  'geser titik biru pada segitiga',
+  '<div class="eq" id="eq1"></div><button class="btn" id="btn1rec" style="margin-top:10px">📌 Catat Data Pengamatan</button><div class="tblwrap"><table class="tbl" id="tbl1"></table></div><div class="note" id="note1"></div>',true);
+h+=shell('p2',
+  '<div class="ctl"><label>Bilangan (a, b, c) <span class="val">1–100</span></label><div class="trio"><input type="number" id="t2a" value="3" min="1" max="100" placeholder="a" inputmode="numeric"><input type="number" id="t2b" value="4" min="1" max="100" placeholder="b" inputmode="numeric"><input type="number" id="t2c" value="5" min="1" max="100" placeholder="c" inputmode="numeric"></div>'+
+  '<div class="note" style="margin-top:8px;font-size:11px">💡 <b>Cukup isi SATU bilangan</b> → semua tripel yang memuat bilangan itu dicari otomatis.</div></div>'+
+  '<div class="ctl"><button class="btn" id="btn2cek">🔍 Uji / Cari Tripel</button><button class="btn ghost" id="btn2clear" style="margin-top:8px">🧹 Kosongkan Semua Kotak</button></div>'+
+  ctlSlider('Kalikan dengan k','v2k','s2k',1,6,2)+'<div class="ctl"><button class="btn ghost" id="btn2play">▶ Animasi kelipatan k = 1 → 6</button></div>'+
+  '<div class="ctl"><label>Contoh tripel populer</label><div class="chips" id="chips2"><span class="chip" data-t="3,4,5">3·4·5</span><span class="chip" data-t="5,12,13">5·12·13</span><span class="chip" data-t="8,15,17">8·15·17</span><span class="chip" data-t="7,24,25">7·24·25</span><span class="chip" data-t="20,21,29">20·21·29</span><span class="chip" data-t=",,12">hanya 12</span></div></div>'+
+  steps('steps2',['Masukkan','Uji/Cari','Kumpulkan','Simpulkan']),
+  'segitiga dari tripel yang ditemukan',
+  '<div class="verdict bad" id="vd2"></div><div class="eq" id="eq2" style="margin-top:10px"></div><div class="tblwrap"><table class="tbl" id="tbl2"></table></div><div class="note" id="note2"></div>');
+h+=shell('p3',
+  ctlSlider('Sisi 1','v3a','s3a',2,20,5)+ctlSlider('Sisi 2','v3b','s3b',2,20,12)+ctlSlider('Sisi 3','v3c','s3c',2,20,13)+
+  '<div class="ctl"><button class="btn" id="btn3play">▶ Animasi Sisi 3 (2 → 20)</button></div><div class="ctl"><button class="btn ghost" id="btn3acak">🎲 Acak Sisi</button></div>'+steps('steps3',['Atur','Bandingkan','Temukan','Simpulkan']),
+  'segitiga bergerak mengikuti panjang sisi',
+  '<div class="verdict bad" id="vd3"></div><div id="kv3" style="margin-top:8px"></div><div><div class="barrow"><span>a² + b²</span><div class="bar"><i id="bar3s"></i></div><b id="bar3sv">0</b></div><div class="barrow"><span>c²</span><div class="bar"><i class="c" id="bar3c"></i></div><b id="bar3cv">0</b></div></div>'+
+  '<div class="eq" id="eq3" style="margin-top:10px"></div><div class="chips" id="chips3"><span class="chip" data-type="siku">Siku-siku</span><span class="chip" data-type="lancip">Lancip</span><span class="chip" data-type="tumpul">Tumpul</span></div><div class="chips" id="chips3b"><span class="chip" data-s="Sama Sisi">Sama sisi</span><span class="chip" data-s="Sama Kaki">Sama kaki</span><span class="chip" data-s="Sembarang">Sembarang</span></div><div class="note" id="note3"></div>');
+h+=shell('p4',
+  '<div class="modebtns"><button class="modebtn on" data-mode="45">45°–45°–90°<small>siku-siku sama kaki</small></button><button class="modebtn" data-mode="30">30°–60°–90°<small>setengah segitiga sama sisi</small></button></div>'+
+  '<div class="ctl"><button class="btn" id="btn4play">▶ Animasikan Asal-usulnya</button></div>'+
+  '<div class="ctl"><label id="l4s">Panjang kaki (s) <span class="val">2</span></label>'+slider('s4',1,10,2)+
+  '<div class="trio" style="grid-template-columns:1fr;margin-top:4px"><input type="text" id="t4s" value="2" inputmode="text" autocomplete="off" placeholder="mis. 2, √2, 3√2, akar 5" style="font-size:16px"></div>'+
+  '<div class="chips" id="chips4"><span class="chip" data-ins="1">√</span><span class="chip" data-v="2">2</span><span class="chip" data-v="√2">√2</span><span class="chip" data-v="√3">√3</span><span class="chip" data-v="2√3">2√3</span><span class="chip" data-v="3√2">3√2</span><span class="chip" data-v="√5">√5</span></div>'+
+  '<div class="note bad" id="e4" style="display:none"></div></div>'+steps('steps4',['Pilih Mode','Atur s','Bandingkan','Simpulkan']),
+  'perbandingan sisi, keliling, dan luas',
+  '<div class="eq" id="eq4"></div><div class="tblwrap" style="max-height:210px"><table class="tbl" id="tbl4"></table></div><div class="note" id="note4"></div>');
+h+=shell('p5',
+  '<div class="ctl"><label>Pilih situasi nyata</label><div class="chips" id="chips5"><span class="chip sel" data-sc="tangga">🪜 Tangga &amp; Dinding</span><span class="chip" data-sc="layar">📺 Layar TV</span><span class="chip" data-sc="lapangan">⚽ Lapangan</span></div></div>'+
+  '<div class="ctl" id="find5wrap"><label>Yang dicari</label><div class="chips" id="chips5f"><span class="chip sel" data-f="diag">Sisi miring (diagonal)</span><span class="chip" data-f="side">Sisi tegak</span></div></div><div class="ctl"><label id="l5a"></label>'+slider('s5a',2,10,4)+'</div><div class="ctl"><label id="l5b"></label>'+slider('s5b',3,15,5)+'</div>'+
+  '<div class="ctl"><label>Isian manual luas &amp; keliling</label><div class="trio" style="grid-template-columns:1fr 1fr"><div><div id="l5L" style="font-size:11px;font-weight:700;color:#5a6485;margin-bottom:3px"></div><input type="text" id="t5L" inputmode="decimal" autocomplete="off" placeholder="luas" style="font-size:16px"></div><div><div id="l5K" style="font-size:11px;font-weight:700;color:#5a6485;margin-bottom:3px"></div><input type="text" id="t5K" inputmode="decimal" autocomplete="off" placeholder="keliling" style="font-size:16px"></div></div>'+
+  '<button class="btn ghost" id="btn5solve" style="margin-top:8px">🔎 Cari ukuran dari luas + keliling</button><div class="note bad" id="e5" style="display:none"></div><div class="note" style="font-size:11px">Ketik <b>luas</b> atau <b>keliling</b>: sisi pertama tetap, sisi kedua menyesuaikan. Atau isi keduanya lalu tekan tombol cari.</div></div>'+
+  '<div class="ctl"><button class="btn" id="btn5play">▶ Animasi ukuran pertama</button></div>'+steps('steps5',['Pilih Situasi','Atur Ukuran','Hitung','Simpulkan']),
+  'sketsa situasi &amp; sisi yang dicari',
+  '<div class="eq" id="eq5"></div><div id="kv5" style="margin-top:10px"></div><div class="chips" id="chips5b"><span class="chip" data-sc="tangga">Tangga</span><span class="chip" data-sc="layar">Layar</span><span class="chip" data-sc="lapangan">Lapangan</span></div><div class="note" id="note5"></div>');
+h+='<section class="panel" id="p6"><div class="card"><div class="card-h">★ Kesimpulan Eksperimen<span class="hint">terbuka otomatis saat stasiun selesai</span></div><div class="card-b"><div class="concl-grid" id="conclGrid"></div>'+
+  '<div class="finalbanner"><div class="fb-ico">🏅</div><div><h3 id="fbTitle"></h3><p id="fbText"></p></div></div>'+
+  '<div class="tps"><b>Tujuan Pembelajaran:</b> TP1 menjelaskan bunyi &amp; makna teorema · TP2 menentukan sisi segitiga siku-siku · TP3 tripel Pythagoras · TP4 jenis segitiga (kebalikan teorema) · TP5 segitiga istimewa · TP6 masalah kontekstual.</div></div></div></section>';
+$('#main').innerHTML=h;
+
+/* ===== SKALA 16:9 & TAB ===== */
+var stage=$('#stage');
+function fit(){stage.style.transform='translate(-50%,-50%) scale('+Math.min(window.innerWidth/1280,window.innerHeight/720)+')'}
+window.addEventListener('resize',fit);window.addEventListener('orientationchange',fit);fit();
+$$('.tab').forEach(function(t){t.addEventListener('click',function(){
+  $$('.tab').forEach(function(x){x.classList.toggle('on',x===t)});
+  $$('.panel').forEach(function(p){p.classList.toggle('on',p.id===t.dataset.panel)})})});
+
+/* ===== PROGRES & KESIMPULAN ===== */
+var STATE={s1:0,s2:0,s3:0,s4:0,s5:0},TABOF={s1:'p1',s2:'p2',s3:'p3',s4:'p4',s5:'p5'};
+var CONCL=[
+ {k:'s1',no:'STASIUN 1 · TP1–2',t:'Teorema Pythagoras',f:'a² + b² = c²',d:'Pada segitiga siku-siku, jumlah kuadrat kedua sisi tegak sama dengan kuadrat sisi miring (hipotenusa).'},
+ {k:'s2',no:'STASIUN 2 · TP3',t:'Tripel Pythagoras',f:'(3,4,5) (5,12,13)',d:'Tiga bilangan bulat positif yang memenuhi a² + b² = c². Kelipatan k dari suatu tripel juga tripel.'},
+ {k:'s3',no:'STASIUN 3 · TP4',t:'Jenis Segitiga',f:'c² ? a² + b²',d:'c² = a²+b² → siku-siku; c² < a²+b² → lancip; c² > a²+b² → tumpul (c = sisi terpanjang).'},
+ {k:'s4',no:'STASIUN 4 · TP5',t:'Segitiga Istimewa',f:'1:1:√2 | 1:√3:2',d:'45°–45°–90° berperbandingan 1 : 1 : √2. 30°–60°–90° berperbandingan 1 : √3 : 2.'},
+ {k:'s5',no:'STASIUN 5 · TP6',t:'Penerapan Kontekstual',f:'c = √(a² + b²)',d:'Dipakai untuk jarak terpendek, diagonal layar dan lapangan, serta tinggi jangkauan tangga.'}];
+function renderConcl(){
+  $('#conclGrid').innerHTML=CONCL.map(function(c){var ok=STATE[c.k];
+    return '<div class="concl'+(ok?'':' locked')+'"><div class="badge">'+(ok?'✅':'🔒')+'</div><div class="cn">'+c.no+'</div><h4>'+c.t+'</h4><div class="f">'+c.f+'</div><p>'+(ok?c.d:'Selesaikan stasiun ini untuk membuka kesimpulannya.')+'</p></div>'}).join('');
+}
+function refresh(){
+  var d=0;for(var k in STATE)if(STATE[k])d++;
+  $('#progTxt').textContent=d+' / 5';$('#progFill').style.width=(d*20)+'%';
+  if(d===5){$('#fbTitle').textContent='🏅 Selamat! Kamu resmi menjadi Penjelajah Pythagoras';
+    $('#fbText').innerHTML='Kamu sudah membuktikan <b>a² + b² = c²</b>, mengenali tripel, menentukan jenis segitiga, memahami segitiga istimewa, dan menerapkannya pada masalah nyata.'}
+  else{$('#fbTitle').textContent='Selesaikan kelima stasiun eksperimen';
+    $('#fbText').innerHTML='Setiap stasiun yang selesai membuka satu kartu kesimpulan. Selesaikan semuanya untuk meraih predikat <b>Penjelajah Pythagoras</b>.'}
+}
+function setDone(k){if(STATE[k])return;STATE[k]=1;$('.tab[data-panel="'+TABOF[k]+'"]').classList.add('done');refresh();renderConcl()}
+renderConcl();refresh();
+
+/* ===== GAMBAR ===== */
+function fitBox(pts,pr){
+  var xs=pts.map(function(p){return p[0]}),ys=pts.map(function(p){return p[1]});
+  var x0=Math.min.apply(null,xs),x1=Math.max.apply(null,xs),y0=Math.min.apply(null,ys),y1=Math.max.apply(null,ys);
+  var w=Math.max(x1-x0,.001),hh=Math.max(y1-y0,.001),m=Math.max(w,hh)*pr;
+  return {vb:(x0-m)+' '+(y0-m)+' '+(w+2*m)+' '+(hh+2*m),w:w,h:hh};
+}
+var FF='font-family="system-ui,Segoe UI,Arial"';
+function T(x,y,s,txt,anchor,fill,wt){return '<text x="'+x+'" y="'+y+'" font-size="'+s+'" text-anchor="'+(anchor||'middle')+'" '+FF+' font-weight="'+(wt||900)+'" fill="'+(fill||'#2c3660')+'">'+txt+'</text>'}
+/* segitiga siku-siku: kaki datar p, kaki tegak q (siku di titik 0,0) */
+function rightTri(p,q,o){
+  o=o||{};var m=Math.max(p,q),box0=fitBox([[0,0],[p,0],[0,-q]],.3),U0=o.svg?upp(o.svg,box0.vb):m/36,fs=Math.min(15*U0,m/5),sw=m/95,pad=m*.3,g='';
+  if(o.wall){g+='<line x1="0" y1="'+(-q-pad*.85)+'" x2="0" y2="'+(pad*.85)+'" stroke="#cfd9ee" stroke-width="'+sw*2.2+'" stroke-linecap="round"/><line x1="'+(-pad*.85)+'" y1="0" x2="'+(p+pad*.85)+'" y2="0" stroke="#cfd9ee" stroke-width="'+sw*2.2+'" stroke-linecap="round"/>'}
+  function seg(x1,y1,x2,y2,u){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" '+(u?'stroke="#8a7cf0" stroke-width="'+sw*1.6+'" stroke-dasharray="'+fs*.45+' '+fs*.32+'"':'stroke="#5b6ee1" stroke-width="'+sw+'"')+' stroke-linecap="round">'+(u?ANI('stroke-dashoffset',0,-fs*.77,'1s'):'')+'</line>'}
+  g+='<polygon points="0,0 '+p+',0 0,'+(-q)+'" fill="#eef3ff" opacity=".85"/>'+seg(0,0,p,0,o.u==='p')+seg(0,0,0,-q,o.u==='q')+seg(0,-q,p,0,o.u==='h');
+  var k=Math.min(p,q)*.15;g+='<polyline points="0,'+-k+' '+k+','+-k+' '+k+',0" fill="none" stroke="#5b6ee1" stroke-width="'+sw+'"/>';
+  g+=T(p/2,fs*1.25,fs,o.lp)+T(-fs*.55,-q/2+fs*.36,fs,o.lq,'end')+T(p/2+fs*.75,-q/2-fs*.55,fs,o.lh,'start','#5b46c8');
+  if(o.vp)g+=T(p/2,fs*2.25,fs*.78,o.vp,'middle','#5a6485',700);
+  if(o.vq)g+=T(-fs*.55,-q/2+fs*1.3,fs*.78,o.vq,'end','#5a6485',700);
+  if(o.vh)g+=T(p/2+fs*.75,-q/2+fs*.45,fs*.78,o.vh,'start','#6a4bc4',700);
+  return {vb:box0.vb,svg:g};
+}
+function put(svg,d){svg.setAttribute('viewBox',d.vb);svg.setAttribute('preserveAspectRatio','xMidYMid meet');svg.innerHTML=d.svg}
+
+/* ===== HELPER ANIMASI & UKURAN HURUF ===== */
+var RM=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+/* satuan SVG per piksel layar: dipakai agar huruf selalu terbaca (±15 px) berapa pun ukuran gambar */
+function upp(svg,vb){var p=vb.split(' ').map(Number),cw=svg.clientWidth||612,ch=svg.clientHeight||530;return 1/Math.min(cw/p[2],ch/p[3])}
+function ANI(attr,from,to,dur){return RM?'':'<animate attributeName="'+attr+'" from="'+from+'" to="'+to+'" dur="'+dur+'" repeatCount="indefinite"/>'}
+var TM={};
+function stopBtn(b){clearInterval(TM[b.id]);TM[b.id]=null;if(b.dataset.l)b.textContent=b.dataset.l}
+function toggleLoop(b,fn,ms){if(TM[b.id]){stopBtn(b);return}b.dataset.l=b.textContent;b.textContent='⏸ Hentikan';TM[b.id]=setInterval(function(){if(fn()===false)stopBtn(b)},ms||600)}
+function stopAll(){for(var k in TM)if(TM[k])stopBtn($('#'+k))}
+function ez(x){return x*x*(3-2*x)}
+
+/* ===== STASIUN 1: EKSPLORASI TEOREMA ===== */
+var S1={a:3,b:4,tool:'sq',recs:[],touched:false},svg1=$('#svg1'),drag1=null;
+function render1(){
+  var a=S1.a,b=S1.b,c=Math.sqrt(a*a+b*b),w=a+a+b,hh=a+b+b,m=Math.max(a+b,a+b)*.07;
+  var x0=-a,y0=-(a+b),W=a+b+a,H=a+b+Math.max(b,0);
+  var vb=(x0-m)+' '+(y0-m)+' '+(W+2*m)+' '+(H+2*m),mx=Math.max(W,H),fs=Math.min(15*upp(svg1,vb),mx/12),sw=mx/110,g='';
+  g+='<defs><pattern id="gp1" width="1" height="1" patternUnits="userSpaceOnUse"><path d="M1 0H0V1" fill="none" stroke="#fff" stroke-width="'+mx/260+'"/></pattern></defs>';
+  var an=S1.anim,pa=1,pb=1,pc=1;
+  if(an){pa=ez(clamp(an.t,0,1));pb=ez(clamp(an.t-1,0,1));pc=ez(clamp(an.t-2,0,1))}
+  if(S1.tool!=='none'){
+    var sqB='0,0 '+b+',0 '+b+','+b*pb+' 0,'+b*pb,sqA='0,0 0,'+-a+' '+-a*pa+','+-a+' '+-a*pa+',0';
+    var sqC='0,'+-a+' '+b+',0 '+(b+a*pc)+','+-b*pc+' '+a*pc+','+-(a+b*pc);
+    g+='<polygon points="'+sqB+'" fill="#ffd9b3" stroke="#f0b478" stroke-width="'+sw+'"/><polygon points="'+sqA+'" fill="#bcd8ff" stroke="#8fb6ee" stroke-width="'+sw+'"/>';
+    if(S1.tool==='grid'&&pa+pb>1.99)g+='<polygon points="'+sqB+'" fill="url(#gp1)"/><polygon points="'+sqA+'" fill="url(#gp1)"/>';
+    g+='<polygon points="'+sqC+'" fill="#d3c4ff" stroke="#a892f0" stroke-width="'+sw+'"/>';
+    var fb=Math.min(fs*1.05,b/4.8),fa=Math.min(fs*1.05,a/4.8),fc=Math.min(fs*1.05,c/5);
+    if(pb>.99)g+=T(b/2,b/2+fb*.36,fb,'b² = '+b*b,'middle','#8a4f10');
+    if(pa>.99)g+=T(-a/2,-a/2+fa*.36,fa,'a² = '+a*a,'middle','#245c9f');
+    if(pc>.99)g+=T((a+b)/2,-(a+b)/2+fc*.36,fc,'c² = '+(a*a+b*b),'middle','#5a3db0');
+  }
+  g+='<polygon points="0,0 '+b+',0 0,'+-a+'" fill="#fff" fill-opacity=".92" stroke="#5b6ee1" stroke-width="'+sw*1.5+'" stroke-linejoin="round"/>';
+  var k=Math.min(a,b)*.16;g+='<polyline points="0,'+-k+' '+k+','+-k+' '+k+',0" fill="none" stroke="#5b6ee1" stroke-width="'+sw*1.4+'"/>';
+  var tf=Math.min(fs*.95,Math.min(a,b)/3.4);g+=T(tf*.55,-a/2+tf*.34,tf,'a='+a,'start')+T(b/2,-tf*.5,tf,'b='+b)+T(b*.34,-a*.34-tf*.28,tf,'c='+fmt(c),'middle','#5b46c8');
+  var hr=mx/30;
+  function hd(w,cx,cy){return '<circle data-h="'+w+'" cx="'+cx+'" cy="'+cy+'" r="'+hr+'" fill="#5b6ee1" stroke="#fff" stroke-width="'+hr*.35+'" style="cursor:grab">'+ANI('r',hr,hr*1.3,'1.4s').replace('from="'+hr+'" to="'+hr*1.3+'"','values="'+hr+';'+hr*1.3+';'+hr+'"').replace(' from="','')+'</circle>'}
+  g+=hd('b',b,0)+hd('a',0,-a);
+  svg1.setAttribute('viewBox',vb);svg1.setAttribute('preserveAspectRatio','xMidYMid meet');svg1.innerHTML=g;
+  $('#v1a').textContent=a;$('#v1b').textContent=b;
+  var eq1h='<div><span class="hi">a² + b² = c²</span></div><div>'+a+'² + '+b+'² = c²</div><div>'+a*a+' + '+b*b+' = <b>'+(a*a+b*b)+'</b></div><div class="big">c = √'+(a*a+b*b)+' = '+fmt(c)+'</div>';
+  $('#eq1').innerHTML=an&&an.t<3?'<div class="hi">a² + b² = c²</div><div>a² = '+a*a+'</div>'+(an.t>=1?'<div>b² = '+b*b+'</div>':'')+(an.t>=2?'<div>a² + b² = '+(a*a+b*b)+'</div>':''):eq1h;
+  setSteps('#steps1',S1.recs.length>=2?4:S1.recs.length?4:S1.touched?3:2);
+}
+function tbl1(){
+  var t='<thead><tr><th>a</th><th>b</th><th>a²+b²</th><th>c²</th><th>c</th></tr></thead><tbody>';
+  t+=S1.recs.length?S1.recs.map(function(r){var s=r.a*r.a+r.b*r.b;return '<tr><td>'+r.a+'</td><td>'+r.b+'</td><td>'+s+'</td><td>'+s+'</td><td>'+fmt(Math.sqrt(s))+'</td></tr>'}).join(''):'<tr><td colspan="5" style="padding:12px;color:#646e8a">Belum ada data. Tekan “Catat Data Pengamatan”.</td></tr>';
+  $('#tbl1').innerHTML=t+'</tbody>';
+  var n=$('#note1');
+  if(S1.recs.length>=2){n.className='note ok';n.innerHTML='✅ <b>Kesimpulan:</b> untuk nilai a dan b berapa pun, <b>a² + b²</b> selalu sama dengan <b>c²</b>. Inilah Teorema Pythagoras pada segitiga siku-siku.';setSteps('#steps1',5);setDone('s1')}
+  else if(S1.recs.length===1){n.className='note warn';n.innerHTML='📌 Catat <b>satu data lagi</b> dengan nilai a atau b yang berbeda.'}
+  else{n.className='note';n.innerHTML='Ubah <b>a</b> dan <b>b</b>, amati <b>luas</b> persegi pada tiap sisi (bukan panjangnya), lalu catat datanya. Hipotenusa = sisi di hadapan sudut siku-siku; c dibulatkan 2 desimal.'}
+}
+function on1(){S1.a=+$('#s1a').value;S1.b=+$('#s1b').value;S1.touched=true;render1()}
+$('#s1a').addEventListener('input',on1);$('#s1b').addEventListener('input',on1);
+$$('#chips1 .chip').forEach(function(c){c.addEventListener('click',function(){S1.tool=c.dataset.t;S1.touched=true;$$('#chips1 .chip').forEach(function(x){x.classList.toggle('sel',x===c)});render1()})});
+$('#btn1acak').addEventListener('click',function(){S1.a=3+Math.floor(Math.random()*10);S1.b=3+Math.floor(Math.random()*10);$('#s1a').value=S1.a;$('#s1b').value=S1.b;S1.touched=true;render1()});
+$('#btn1rec').addEventListener('click',function(){
+  var dup=S1.recs.some(function(r){return r.a===S1.a&&r.b===S1.b});
+  if(!dup){if(S1.recs.length>=6)S1.recs.shift();S1.recs.push({a:S1.a,b:S1.b})}
+  tbl1();render1();if(S1.recs.length>=2)setSteps('#steps1',5)});
+/* geser titik (output → input) */
+svg1.addEventListener('pointerdown',function(e){
+  var t=e.target.closest&&e.target.closest('[data-h]');if(!t)return;e.preventDefault();
+  var m=svg1.getScreenCTM();drag1={w:t.getAttribute('data-h'),a:S1.a,b:S1.b,x:e.clientX,y:e.clientY,k:m?1/m.a:1};
+  window.addEventListener('pointermove',mv1);window.addEventListener('pointerup',up1);window.addEventListener('pointercancel',up1)});
+function mv1(e){if(!drag1)return;var dx=(e.clientX-drag1.x)*drag1.k,dy=(e.clientY-drag1.y)*drag1.k;
+  if(drag1.w==='b'){S1.b=clamp(Math.round(drag1.b+dx),3,12);$('#s1b').value=S1.b}else{S1.a=clamp(Math.round(drag1.a-dy),3,12);$('#s1a').value=S1.a}
+  S1.touched=true;render1()}
+function up1(){drag1=null;window.removeEventListener('pointermove',mv1);window.removeEventListener('pointerup',up1);window.removeEventListener('pointercancel',up1)}
+render1();tbl1();
+
+/* ===== STASIUN 2: TRIPEL PYTHAGORAS ===== */
+var S2={found:[],mode:'check',cur:null,show:null,lastN:null},svg2=$('#svg2');
+function read2(){
+  var v=['t2a','t2b','t2c'].map(function(id){var s=$('#'+id).value.trim();if(s==='')return null;var n=parseInt(s,10);return isNaN(n)?null:clamp(n,1,100)});
+  return {vals:v,count:v.filter(function(x){return x!==null}).length};
+}
+function ph2(msg){put(svg2,{vb:fitBox([[0,0],[1,0],[0,-1]],.35).vb,svg:'<polygon points="0,0 1,0 0,-1" fill="#eef3ff" stroke="#c3cee6" stroke-width=".03" stroke-dasharray=".08 .06"/>'+T(.5,.42,.11,msg,'middle','#646e8a',800)})}
+function drawK(t,kf,k){
+  if(k<=1&&kf<=1.001){put(svg2,rightTri(t.p,t.q,{svg:svg2,lp:'a = '+t.p,lq:'b = '+t.q,lh:'c = '+t.r}));return}
+  /* segitiga hasil kelipatan k (besar), segitiga asli di dalamnya */
+  var d=rightTri(t.p*kf,t.q*kf,{svg:svg2,lp:'ka = '+t.p*k,lq:'kb = '+t.q*k,lh:'kc = '+t.r*k}),m=Math.max(t.p,t.q)*kf,U=upp(svg2,d.vb);
+  var inner='<polygon points="0,0 '+t.p+',0 0,'+-t.q+'" fill="#ffd9b3" fill-opacity=".75" stroke="#e0912b" stroke-width="'+m/95*1.5+'"/>'+T(t.p*.3,-t.q*.3,Math.min(12*U,t.p/3),'asli','middle','#8a5a0e');
+  put(svg2,{vb:d.vb,svg:d.svg+inner});
+}
+/* menggambar dengan transisi halus saat nilai k berubah */
+function draw2(t){
+  var k=+$('#s2k').value;S2.dt=t;S2.kt=k;if(S2.kv==null||RM)S2.kv=k;cancelAnimationFrame(S2.kr);
+  (function f(){S2.kv+=(S2.kt-S2.kv)*.25;if(Math.abs(S2.kt-S2.kv)<.02)S2.kv=S2.kt;drawK(S2.dt,S2.kv,S2.kt);if(S2.kv!==S2.kt)S2.kr=requestAnimationFrame(f)})();
+}
+function kRow(){
+  var t=S2.show;if(!t)return '';var k=+$('#s2k').value,a=t.p*k,b=t.q*k,c=t.r*k;
+  return '<div style="margin-top:6px;border-top:1px dashed #dde4f5;padding-top:6px"><div><span class="hi">Skala k = '+k+'</span></div><div>('+t.p+', '+t.q+', '+t.r+') × '+k+' = <b>('+a+', '+b+', '+c+')</b></div><div>'+a+'² + '+b+'² = '+(a*a+b*b)+'</div><div>'+c+'² = '+c*c+'</div><div class="big">✔ sama → tetap tripel</div><button class="btn ghost" id="btn2k" style="min-height:40px;margin-top:6px">➕ Tambah (ka, kb, kc) ke tabel</button></div>';
+}
+function triples(n){
+  var out=[],seen={};
+  function push(t){t.sort(function(x,y){return x-y});var key=t.join('-');if(!seen[key]){seen[key]=1;out.push({p:t[0],q:t[1],r:t[2]})}}
+  for(var b=1;b<=150;b++){var c2=n*n+b*b,c=Math.round(Math.sqrt(c2));if(c*c===c2)push([n,b,c])}   /* n sebagai sisi tegak */
+  for(var a=1;a<n;a++){var b2=n*n-a*a,bb=Math.round(Math.sqrt(b2));if(bb>0&&bb*bb===b2)push([a,bb,n])} /* n sebagai hipotenusa */
+  out.sort(function(x,y){return x.r-y.r||x.p-y.p});return out;
+}
+function add2(t){var k=t.p+'-'+t.q+'-'+t.r;if(S2.found.indexOf(k)<0){S2.found.push(k);if(S2.found.length>30)S2.found.shift()}}
+function tbl2(){
+  var t='<thead><tr><th>#</th><th>a</th><th>b</th><th>c</th><th>a²+b²</th><th>c²</th></tr></thead><tbody>';
+  t+=S2.found.length?S2.found.map(function(k,i){var p=k.split('-').map(Number);return '<tr class="pick" data-k="'+k+'"><td>'+(i+1)+'</td><td>'+p[0]+'</td><td>'+p[1]+'</td><td>'+p[2]+'</td><td>'+(p[0]*p[0]+p[1]*p[1])+'</td><td>'+p[2]*p[2]+'</td></tr>'}).join('')+'<tr><td colspan="6" style="color:#646e8a;font-size:10.5px">Ketuk satu baris untuk memuatnya ke kotak input.</td></tr>':'<tr><td colspan="6" style="padding:12px;color:#646e8a">Belum ada tripel ditemukan.</td></tr>';
+  $('#tbl2').innerHTML=t+'</tbody>';
+}
+function verdict2(cls,txt){$('#vd2').className='verdict '+cls;$('#vd2').innerHTML='<span class="dot"></span><span>'+txt+'</span>'}
+function finish2(user){
+  tbl2();var n=$('#note2');
+  if(S2.found.length>=2){n.className='note ok';n.innerHTML='✅ <b>Kesimpulan:</b> tripel Pythagoras adalah tiga bilangan bulat dengan a² + b² = c². Jika (a, b, c) tripel, maka (ka, kb, kc) juga tripel. Satu bilangan bisa ada di banyak tripel. Terkumpul: <b>'+S2.found.length+'</b>.';setSteps('#steps2',5);setDone('s2')}
+  return n;
+}
+function auto2(n,user){
+  S2.mode='auto';S2.cur=null;S2.lastN=n;var res=triples(n),note=$('#note2');
+  if(!res.length){S2.show=null;verdict2('bad','Tidak ada tripel untuk bilangan '+n);
+    $('#eq2').innerHTML='<div>Pencarian otomatis untuk <span class="hi">'+n+'</span></div><div class="mut">Tidak ada pasangan bilangan bulat yang membentuk tripel bersama '+n+'.</div>';
+    ph2('tidak ada tripel untuk '+n);tbl2();note.className='note warn';note.innerHTML='💡 Coba <b>3, 4, 5, 8, 12, 15, 20, 24, 40</b>, atau <b>60</b>.';setSteps('#steps2',3);return}
+  if(user)res.forEach(add2);
+  S2.show=res[0];draw2(res[0]);verdict2('ok','Ditemukan '+res.length+' tripel yang memuat '+n);
+  var list=res.slice(0,8).map(function(t,i){return '<div>'+(i+1)+'. ('+t.p+', '+t.q+', '+t.r+') → '+t.p+'² + '+t.q+'² = '+t.r+'²</div>'}).join('');
+  if(res.length>8)list+='<div class="mut">… dan '+(res.length-8)+' tripel lainnya (lihat tabel)</div>';
+  $('#eq2').innerHTML='<div><span class="hi">Pencarian otomatis: bilangan '+n+'</span></div><div style="margin:6px 0">'+list+'</div><div class="mut">Segitiga di kanvas: ('+res[0].p+', '+res[0].q+', '+res[0].r+')</div>'+kRow();
+  var nn=finish2(user);setSteps('#steps2',S2.found.length>=2?5:3);
+  if(S2.found.length<2){nn.className='note warn';nn.innerHTML='📌 Ditemukan '+res.length+' tripel. Coba bilangan lain untuk menambah data.'}
+}
+function check2(user){
+  var r=read2();S2.mode='check';var arr=r.vals.slice().sort(function(x,y){return x-y}),p=arr[0],q=arr[1],c=arr[2];
+  var lhs=p*p+q*q,rhs=c*c,ok=lhs===rhs;S2.cur={ok:ok};S2.show=ok?{p:p,q:q,r:c}:null;
+  verdict2(ok?'ok':'bad',ok?'TRIPEL PYTHAGORAS ✔':'Bukan tripel Pythagoras');
+  $('#eq2').innerHTML='<div>Diurutkan: <span class="hi">'+p+', '+q+', '+c+'</span></div><div>'+p+'² + '+q+'² = '+lhs+'</div><div>'+c+'² = '+rhs+'</div><div class="'+(ok?'big':'mut')+'">'+(ok?'✔ '+lhs+' = '+rhs:'✘ '+lhs+' ≠ '+rhs)+'</div>'+(ok?kRow():'<div style="font:600 11.5px system-ui;margin-top:4px;color:#5a6485">'+(p+q<=c?'Ketiganya tidak dapat membentuk segitiga (a + b ≤ c).':lhs<rhs?'a² + b² lebih kecil dari c², jadi segitiganya tumpul, bukan siku-siku.':'a² + b² lebih besar dari c², jadi segitiganya lancip, bukan siku-siku.')+' Ingat: yang dibandingkan adalah kuadrat sisi, bukan panjang sisi.</div>');
+  if(ok){draw2(S2.show);if(user)add2(S2.show)}else ph2('bukan segitiga siku-siku');
+  var n=finish2(user);setSteps('#steps2',ok?(S2.found.length>=2?5:4):3);
+  if(S2.found.length<2){if(ok){n.className='note warn';n.innerHTML='📌 Tripel valid! Kosongkan dua kotak dan isi <b>satu bilangan</b> untuk melihat semua tripelnya.'}
+    else{n.className='note bad';n.innerHTML='Bukan tripel. Kosongkan dua kotak dan isi <b>satu bilangan</b> agar sistem mencarinya otomatis.'}}
+}
+function route2(user){
+  var r=read2();
+  if(r.count===0){S2.mode='check';S2.show=null;verdict2('bad','Masukkan bilangan');$('#eq2').innerHTML='<div class="mut">Masukkan <b>satu bilangan</b> untuk mencari tripel, atau <b>tiga bilangan</b> untuk menguji.</div>';ph2('menunggu bilangan…');tbl2();setSteps('#steps2',1);$('#note2').className='note';$('#note2').innerHTML='Ketik bilangan pada salah satu kotak. Tripelnya langsung dicari.';return}
+  if(r.count===1){auto2(r.vals.filter(function(v){return v!==null})[0],user);return}
+  if(r.count===3){check2(user);return}
+  S2.mode='partial';S2.show=null;verdict2('bad','Lengkapi 1 bilangan lagi');$('#eq2').innerHTML='<div class="mut">Isi <b>ketiga</b> bilangan untuk menguji, atau kosongkan dua kotak untuk pencarian otomatis.</div>';ph2('lengkapi bilangan');tbl2();setSteps('#steps2',2);
+  $('#note2').className='note warn';$('#note2').innerHTML='💡 Baru <b>2</b> bilangan terisi. Isi satu lagi, atau kosongkan satu kotak.';
+}
+['t2a','t2b','t2c'].forEach(function(id){var el=$('#'+id);
+  el.addEventListener('input',function(){route2(true)});el.addEventListener('change',function(){route2(true)});
+  el.addEventListener('blur',function(){if(this.value.trim()==='')return;var n=parseInt(this.value,10);this.value=isNaN(n)?'':clamp(n,1,100)})});
+$('#btn2cek').addEventListener('click',function(){route2(true)});
+$('#btn2clear').addEventListener('click',function(){['t2a','t2b','t2c'].forEach(function(i){$('#'+i).value=''});$$('#chips2 .chip').forEach(function(c){c.classList.remove('sel')});route2(true)});
+$$('#chips2 .chip').forEach(function(ch){ch.addEventListener('click',function(){var t=ch.dataset.t.split(',');
+  $('#t2a').value=t[0]||'';$('#t2b').value=t[1]||'';$('#t2c').value=t[2]||'';
+  $$('#chips2 .chip').forEach(function(c){c.classList.toggle('sel',c===ch)});route2(true)})});
+/* output → input: ketuk baris tabel untuk memuat tripel ke kotak input */
+$('#tbl2').addEventListener('click',function(e){var tr=e.target.closest('tr.pick');if(!tr)return;var p=tr.dataset.k.split('-');
+  $('#t2a').value=p[0];$('#t2b').value=p[1];$('#t2c').value=p[2];route2(true)});
+$('#eq2').addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('#btn2k');if(!b||!S2.show)return;
+  var k=+$('#s2k').value,t=S2.show;add2({p:t.p*k,q:t.q*k,r:t.r*k});var n=finish2(true);
+  if(S2.found.length<2){n.className='note warn';n.innerHTML='📌 Kelipatan ditambahkan ke tabel. Tambahkan satu tripel lagi.'}});
+$('#s2k').addEventListener('input',function(){$('#v2k').textContent=this.value;route2(false)});
+route2(false); /* keadaan awal 3·4·5, belum dihitung sebagai temuan murid */
+
+/* ===== STASIUN 3: JENIS SEGITIGA ===== */
+var S3={a:5,b:12,c:13,found:[],sf:[],P:null,touched:false},svg3=$('#svg3');
+var WHY3={siku:'c² sama dengan a²+b², jadi sudut di depan c tepat 90°. Hanya pada segitiga siku-siku sisi terpanjang itu disebut hipotenusa.',lancip:'c² lebih kecil dari a²+b², jadi sudut di depan c kurang dari 90° dan semua sudutnya lancip. Sisi terpanjang di sini bukan hipotenusa.',tumpul:'c² lebih besar dari a²+b², jadi sudut di depan c lebih dari 90°. Sisi terpanjang di sini bukan hipotenusa.',none:'Syarat segitiga: jumlah dua sisi harus lebih besar dari sisi ketiga. Periksa ini sebelum membandingkan kuadrat.'};
+var EX3={siku:[6,8,10],lancip:[6,7,8],tumpul:[4,5,8]};
+/* titik segitiga: A=(0,0), B=(c,0) dengan c sisi terpanjang, C di atas alas */
+function tri3(a,b,c){var x=(b*b+c*c-a*a)/(2*c);return [[0,0],[c,0],[x,-Math.sqrt(Math.max(b*b-x*x,0))]]}
+function ang3(a,b,c){function d(x,y,z){return Math.acos(clamp((y*y+z*z-x*x)/(2*y*z),-1,1))*180/Math.PI}return [d(a,b,c),d(b,a,c),d(c,a,b)]}
+function dg(x){return String(Math.round(x*10)/10)}
+function draw3(P,v){
+  var A=P[0],B=P[1],C=P[2],box=fitBox([A,B,C,[C[0],0]],.24),U=upp(svg3,box.vb),md=Math.max(box.w,box.h),fs=Math.min(15*U,md/7),sw=Math.min(2.4*U,md/60);
+  var col=v.type==='siku'?'#5b6ee1':v.type==='lancip'?'#17a884':'#e0912b',fill=v.type==='siku'?'#eef3ff':v.type==='lancip'?'#eefbf6':'#fff4ec',dk=v.type==='siku'?'#3a4cb8':v.type==='lancip'?'#0f7d62':'#8a5a0e';
+  var G=[(A[0]+B[0]+C[0])/3,(A[1]+B[1]+C[1])/3],g='';
+  g+='<polygon points="'+A+' '+B+' '+C+'" fill="'+fill+'" stroke="'+col+'" stroke-width="'+sw+'" stroke-linejoin="round"/>';
+  var h=-C[1];
+  if(h>md*.03){ /* garis tinggi (putus-putus bergerak) */
+    var mk=Math.min(9*U,h*.4);
+    g+='<line x1="'+C[0]+'" y1="'+C[1]+'" x2="'+C[0]+'" y2="0" stroke="#8a7cf0" stroke-width="'+sw*.8+'" stroke-dasharray="'+7*U+' '+5*U+'">'+ANI('stroke-dashoffset',0,-12*U,'1s')+'</line>';
+    g+='<polyline points="'+(C[0]-mk)+',0 '+(C[0]-mk)+','+-mk+' '+C[0]+','+-mk+'" fill="none" stroke="#8a7cf0" stroke-width="'+sw*.7+'"/>';
+    g+=T(C[0]+fs*.4,C[1]/2+fs*.3,fs*.85,'t = '+fmt(v.h),'start','#6a4bc4',800);
+  }
+  function dir(V,W){var dx=W[0]-V[0],dy=W[1]-V[1],l=Math.hypot(dx,dy)||1;return [dx/l,dy/l]}
+  function arc(V,W1,W2,deg){
+    var u=dir(V,W1),w=dir(V,W2),r=Math.min(24*U,Math.hypot(W1[0]-V[0],W1[1]-V[1])*.35,Math.hypot(W2[0]-V[0],W2[1]-V[1])*.35),o='';
+    if(Math.abs(deg-90)<.05)o+='<polyline points="'+(V[0]+u[0]*r)+','+(V[1]+u[1]*r)+' '+(V[0]+(u[0]+w[0])*r)+','+(V[1]+(u[1]+w[1])*r)+' '+(V[0]+w[0]*r)+','+(V[1]+w[1]*r)+'" fill="none" stroke="'+col+'" stroke-width="'+sw+'"/>';
+    else o+='<path d="M'+(V[0]+u[0]*r)+' '+(V[1]+u[1]*r)+' A'+r+' '+r+' 0 0 '+((u[0]*w[1]-u[1]*w[0])>0?1:0)+' '+(V[0]+w[0]*r)+' '+(V[1]+w[1]*r)+'" fill="none" stroke="'+col+'" stroke-width="'+sw*1.1+'"/>';
+    var bx=u[0]+w[0],by=u[1]+w[1],bl=Math.hypot(bx,by)||1;
+    return o+T(V[0]-bx/bl*fs*1.9,V[1]-by/bl*fs*1.9+fs*.3,fs*.85,dg(deg)+'°','middle',dk,800);
+  }
+  g+=arc(A,B,C,v.ang[0])+arc(B,A,C,v.ang[1])+arc(C,A,B,v.ang[2]);
+  function side(P1,P2,txt){var mx=(P1[0]+P2[0])/2,my=(P1[1]+P2[1])/2,nx=mx-G[0],ny=my-G[1],l=Math.hypot(nx,ny)||1;return T(mx+nx/l*fs*1.6,my+ny/l*fs*1.6+fs*.33,fs,txt)}
+  g+=side(A,B,'c = '+v.c)+side(A,C,'b = '+v.b)+side(B,C,'a = '+v.a);
+  put(svg3,{vb:box.vb,svg:g});
+}
+/* segitiga bergerak halus dari bentuk lama ke bentuk baru */
+function anim3(Pt,v){
+  cancelAnimationFrame(S3.raf);var P0=(S3.P&&!RM)?S3.P:Pt,t0=null;
+  function f(ts){if(t0===null)t0=ts;var t=Math.min(1,(ts-t0)/340),e=ez(t);
+    var P=Pt.map(function(p,i){return [P0[i][0]+(p[0]-P0[i][0])*e,P0[i][1]+(p[1]-P0[i][1])*e]});
+    draw3(P,v);S3.P=P;if(t<1)S3.raf=requestAnimationFrame(f)}
+  S3.raf=requestAnimationFrame(f);
+}
+function render3(){
+  var s=[S3.a,S3.b,S3.c].sort(function(x,y){return y-x}),c=s[0],a=s[1],b=s[2],sum=a*a+b*b,sq=c*c,valid=a+b>c,type='none',lab='Bukan segitiga';
+  if(valid){if(sq===sum){type='siku';lab='Siku-siku'}else if(sq<sum){type='lancip';lab='Lancip'}else{type='tumpul';lab='Tumpul'}}
+  var sisi=(a===b&&b===c)?'Sama Sisi':(a===b||b===c||a===c)?'Sama Kaki':'Sembarang';
+  var K=a+b+c,ss=K/2,L=valid?Math.sqrt(ss*(ss-a)*(ss-b)*(ss-c)):0,h=valid?2*L/c:0,an=ang3(a,b,c);
+  $('#v3a').textContent=S3.a;$('#v3b').textContent=S3.b;$('#v3c').textContent=S3.c;
+  $('#vd3').className='verdict '+(!valid?'bad':type==='siku'?'ok':'mid');
+  $('#vd3').innerHTML='<span class="dot"></span><span>'+(valid?'Segitiga '+sisi+' · '+lab:'Bukan segitiga')+'</span>';
+  $('#kv3').innerHTML=valid?'<div class="kv"><span>Menurut sisi</span><b>'+sisi+'</b></div><div class="kv"><span>Menurut sudut</span><b>'+lab+'</b></div><div class="kv"><span>Sudut A · B · C</span><b>'+dg(an[0])+'° · '+dg(an[1])+'° · '+dg(an[2])+'°</b></div><div class="kv"><span>Keliling</span><b>'+K+'</b></div><div class="kv"><span>Luas</span><b>'+fmt(L)+'</b></div>':'';
+  var mx=Math.max(sum,sq,1);$('#bar3s').style.width=sum/mx*100+'%';$('#bar3c').style.width=sq/mx*100+'%';$('#bar3sv').textContent=sum;$('#bar3cv').textContent=sq;
+  var cmp=sq===sum?'=':sq<sum?'<':'>';
+  $('#eq3').innerHTML='<div>c = '+c+' <span class="mut">(terpanjang)</span></div><div>c² = '+sq+' '+cmp+' a² + b² = '+sum+'</div><div class="'+(type==='siku'?'big':'mut')+'">'+(type==='siku'?'c² = a² + b² → siku-siku':type==='lancip'?'c² &lt; a² + b² → lancip':type==='tumpul'?'c² &gt; a² + b² → tumpul':'a + b ≤ c → tidak membentuk segitiga')+'</div><div style="font:600 11.5px system-ui;margin-top:4px;color:#5a6485">'+WHY3[type]+'</div>'+
+    (valid?'<div style="margin-top:6px">K = a + b + c = '+a+' + '+b+' + '+c+' = <b>'+K+'</b></div><div>L = ½ × c × t = ½ × '+c+' × '+fmt(h)+' = <b>'+fmt(L)+'</b></div>':'');
+  if(valid)anim3(tri3(a,b,c),{a:a,b:b,c:c,type:type,h:h,ang:an});
+  else{cancelAnimationFrame(S3.raf);S3.P=null;put(svg3,{vb:fitBox([[0,0],[1,0],[0,-1]],.35).vb,svg:T(.5,-.4,.1,'Tidak dapat membentuk segitiga','middle','#b23a4c')+T(.5,-.2,.07,'jumlah dua sisi harus lebih besar dari sisi ketiga','middle','#646e8a',700)})}
+  if(S3.touched&&valid){if(S3.found.indexOf(type)<0)S3.found.push(type);if(S3.sf.indexOf(sisi)<0)S3.sf.push(sisi)}
+  $$('#chips3 .chip').forEach(function(ch){ch.classList.toggle('on',S3.found.indexOf(ch.dataset.type)>=0)});
+  $$('#chips3b .chip').forEach(function(ch){ch.classList.toggle('on',S3.sf.indexOf(ch.dataset.s)>=0)});
+  var n=$('#note3'),f=S3.found.length;setSteps('#steps3',f>=3?5:f?3:2);
+  if(f>=3){n.className='note ok';n.innerHTML='✅ <b>Kesimpulan:</b> menurut sudut: c² = a²+b² → <b>siku-siku</b>; c² &lt; a²+b² → <b>lancip</b>; c² &gt; a²+b² → <b>tumpul</b>. Menurut sisi: <b>sama sisi</b>, <b>sama kaki</b>, atau <b>sembarang</b>. Keliling = a + b + c; luas = ½ × alas × tinggi.';setDone('s3')}
+  else if(f){n.className='note warn';n.innerHTML='📌 Sudah menemukan <b>'+f+' dari 3</b> jenis menurut sudut. Ketuk jenis yang sudah ditemukan untuk memuat contohnya.'}
+  else{n.className='note';n.innerHTML='Atur ketiga sisi atau tekan ▶ Animasi, lalu temukan ketiga jenis segitiga menurut sudut.'}
+}
+['s3a','s3b','s3c'].forEach(function(id,i){$('#'+id).addEventListener('input',function(){S3[['a','b','c'][i]]=+this.value;S3.touched=true;render3()})});
+function set3(a,b,c){S3.a=a;S3.b=b;S3.c=c;$('#s3a').value=a;$('#s3b').value=b;$('#s3c').value=c}
+$('#btn3acak').addEventListener('click',function(){set3(2+Math.floor(Math.random()*19),2+Math.floor(Math.random()*19),2+Math.floor(Math.random()*19));S3.touched=true;render3()});
+/* output → input: jenis yang sudah ditemukan bisa diketuk untuk memuat contoh sisinya */
+$$('#chips3 .chip').forEach(function(ch){ch.addEventListener('click',function(){if(S3.found.indexOf(ch.dataset.type)<0)return;var e=EX3[ch.dataset.type];set3(e[0],e[1],e[2]);S3.touched=true;render3()})});
+render3();
+
+/* ===== STASIUN 4: SEGITIGA ISTIMEWA ===== */
+var S4={mode:'45',rad:{k:2,m:1},seen:[]},svg4=$('#svg4');
+/* bilangan akar: k√m, disederhanakan (mis. √8 → 2√2) */
+function simp(k,m){var f=1;for(var d=2;d*d<=m;d++){while(m%(d*d)===0){m/=d*d;f*=d}}return {k:k*f,m:m}}
+function radStr(r){var k=Math.round(r.k*1e6)/1e6;return r.m===1?fmt(k):(k===1?'':fmt(k))+'√'+r.m}
+function radVal(r){return r.k*Math.sqrt(r.m)}
+function mulRad(r,k2,m2){return simp(r.k*k2,r.m*m2)}
+function parseRad(str){
+  var t=String(str).toLowerCase().replace(/\s+/g,'').replace(/,/g,'.').replace(/(sqrt|akar)\(?/g,'√').replace(/\)/g,'').replace(/[*x×]/g,'');
+  var m=t.match(/^(\d*\.?\d+)?(√(\d+))?$/);if(!m||(m[1]===undefined&&m[2]===undefined))return null;
+  var k=m[1]!==undefined?parseFloat(m[1]):1,q=m[3]!==undefined?parseInt(m[3],10):1;
+  if(!(k>0)||!(q>=1)||q>10000)return null;return simp(k,q);
+}
+function render4(){
+  var r=S4.rad,s=radVal(r),sx=radStr(r),r2=mulRad(r,1,2),r3=mulRad(r,1,3),r22=simp(r.k*2,r.m),q=r.k*r.k*r.m,P=[0,0],Q,R,G2,lp,lq,lh,vp,vq,vh,rows,eq,is45=S4.mode==='45',an=S4.an,t=an?an.t:0;
+  if(is45){
+    Q=[s,0];R=[0,-s];G2=[s,-s];lp='s';lq='s';lh='s√2';vp=sx;vq=sx;vh=radStr(r2);
+    $('#l4s').innerHTML='Panjang kaki (s) <span class="val">'+sx+'</span>';
+    eq='<div><span class="hi">Segitiga 45° – 45° – 90°</span></div><div>perbandingan sisi = <b>1 : 1 : √2</b></div><div>kaki = s = '+sx+'</div><div class="big">hipotenusa = s√2 = '+radStr(r2)+' ≈ '+fmt(radVal(r2))+'</div>';
+    rows=[['Kaki 1','s',sx,s],['Kaki 2','s',sx,s],['Hipotenusa','s√2',radStr(r2),radVal(r2)],['Keliling','s(2+√2)',radStr(simp(2*r.k,r.m))+' + '+radStr(r2),2*s+radVal(r2)],['Luas','½ s²',fmt(q/2),q/2]];
+  }else{
+    var L=radVal(r3);Q=[L,0];R=[0,-s];G2=[0,s];lp='s√3';lq='s';lh='2s';vp=radStr(r3);vq=sx;vh=radStr(r22);
+    $('#l4s').innerHTML='Sisi terpendek (s) <span class="val">'+sx+'</span>';
+    eq='<div><span class="hi">Segitiga 30° – 60° – 90°</span></div><div>perbandingan sisi = <b>1 : √3 : 2</b></div><div>sisi terpendek = s = '+sx+'</div><div class="big">sisi sedang = s√3 = '+radStr(r3)+' ≈ '+fmt(L)+'</div><div class="big">hipotenusa = 2s = '+radStr(r22)+' ≈ '+fmt(radVal(r22))+'</div>';
+    rows=[['Terpendek (30°)','s',sx,s],['Sedang (60°)','s√3',radStr(r3),L],['Hipotenusa','2s',radStr(r22),radVal(r22)],['Keliling','s(3+√3)',radStr(simp(3*r.k,r.m))+' + '+radStr(r3),3*s+L],['Luas','½ s²√3',radStr({k:q/2,m:3}),q*Math.sqrt(3)/2]];
+  }
+  var box=fitBox([P,Q,R,G2],.26),U=upp(svg4,box.vb),md=Math.max(box.w,box.h),fs=Math.min(15*U,md/8),sw=Math.min(2.4*U,md/50),col=is45?'#5b6ee1':'#17a884',g='';
+  /* bayangan asal-usul: setengah lainnya dari persegi (45°) atau segitiga sama sisi (30°) */
+  var gp=is45?[Q,G2,R]:[P,Q,G2],pg=an?ez(clamp(t,0,1)):0,ph=an?ez(clamp(t-1,0,1)):0,cx=(gp[0][0]+gp[1][0]+gp[2][0])/3,cy=(gp[0][1]+gp[1][1]+gp[2][1])/3;
+  g+='<polygon points="'+gp[0]+' '+gp[1]+' '+gp[2]+'" fill="#ffd9a8" fill-opacity="'+(.55*pg)+'" stroke="#c9a36b" stroke-width="'+sw*.8+'" stroke-dasharray="'+6*U+' '+5*U+'"/>';
+  if(an&&pg>.9)g+=T(cx,cy,fs*.75,is45?'persegi s × s':'segitiga sama sisi','middle','#8a5a0e',700);
+  if(an&&t>=2)g+=T(cx,cy+fs*1.05,fs*.75,is45?'diagonal = s√2':'tinggi = s√3','middle','#8a5a0e',800);
+  var hl=is45?[R,Q]:[P,Q];
+  g+='<polygon points="'+P+' '+Q+' '+R+'" fill="'+(is45?'#eef3ff':'#eefbf6')+'" fill-opacity=".9" stroke="'+col+'" stroke-width="'+sw*1.6+'" stroke-linejoin="round"/>';
+  if(an&&ph>0)g+='<line x1="'+hl[0][0]+'" y1="'+hl[0][1]+'" x2="'+hl[1][0]+'" y2="'+hl[1][1]+'" stroke="#e0912b" stroke-opacity="'+ph+'" stroke-width="'+sw*2.4+'" stroke-linecap="round"/>';
+  var k=Math.min(md*.1,14*U);g+='<polyline points="0,'+-k+' '+k+','+-k+' '+k+',0" fill="none" stroke="'+col+'" stroke-width="'+sw+'"/>';
+  g+=T(Q[0]/2,fs*1.5,fs,lp)+T(-fs*.7,R[1]/2+fs*.3,fs,lq,'end')+T(Q[0]/2+fs*.8,R[1]/2-fs*.6,fs,lh,'start','#5b46c8');
+  g+=T(Q[0]/2,fs*2.7,fs*.8,vp,'middle','#5a6485',700)+T(-fs*.7,R[1]/2+fs*1.4,fs*.8,vq,'end','#5a6485',700)+T(Q[0]/2+fs*.8,R[1]/2+fs*.4,fs*.8,vh,'start','#6a4bc4',700);
+  g+=T(-fs*.5,fs*1.1,fs*.8,'90°','end','#8a5a0e')+T(Q[0]+fs*.5,fs*.3,fs*.8,is45?'45°':'30°','start','#8a5a0e')+T(0,R[1]-fs*.7,fs*.8,is45?'45°':'60°','middle','#8a5a0e');
+  put(svg4,{vb:box.vb,svg:g});
+  $('#eq4').innerHTML=eq;
+  $('#tbl4').innerHTML='<thead><tr><th>Unsur</th><th>Rumus</th><th>Eksak</th><th>≈</th></tr></thead><tbody>'+rows.map(function(x){return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td><td>'+x[2]+'</td><td>'+fmt(x[3])+'</td></tr>'}).join('')+'</tbody>';
+  var n=$('#note4'),f=S4.seen.length;setSteps('#steps4',f>=2?5:f?3:2);
+  if(f>=2){n.className='note ok';n.innerHTML='✅ <b>Kesimpulan:</b><br>• 45°–45°–90° → <b>1 : 1 : √2</b>, K = s(2+√2), L = ½s²<br>• 30°–60°–90° → <b>1 : √3 : 2</b>, K = s(3+√3), L = ½s²√3';setDone('s4')}
+  else if(f===1){n.className='note warn';n.innerHTML='📌 Kamu sudah mencoba satu mode. Coba mode satunya untuk membandingkan.'}
+  else{n.className='note';n.innerHTML='Pilih mode, tekan ▶ Animasikan untuk melihat asal-usulnya, lalu isi <b>s</b> sendiri (angka atau akar).'}
+}
+function seen4(){if(S4.seen.indexOf(S4.mode)<0)S4.seen.push(S4.mode)}
+$$('.modebtn').forEach(function(b){b.addEventListener('click',function(){S4.mode=b.dataset.mode;$$('.modebtn').forEach(function(x){x.classList.toggle('on',x===b)});seen4();render4()})});
+function applyS4(txt,fromSlider){
+  var e=$('#e4'),r=parseRad(txt);
+  if(!r||radVal(r)<0.1||radVal(r)>60){e.style.display='block';e.innerHTML='⚠️ Isi bilangan positif antara 0,1 dan 60, boleh memakai akar, mis. <b>4</b>, <b>2,5</b>, <b>√3</b>, <b>3√2</b>, atau <b>akar 5</b>.';return}
+  e.style.display='none';S4.rad=r;
+  if(!fromSlider){var sl=$('#s4');if(r.m===1&&r.k>=1&&r.k<=10&&r.k===Math.round(r.k))sl.value=r.k}
+  seen4();render4();
+}
+$('#s4').addEventListener('input',function(){$('#t4s').value=this.value;applyS4(this.value,true)});
+$('#t4s').addEventListener('input',function(){applyS4(this.value,false)});
+$$('#chips4 .chip').forEach(function(c){c.addEventListener('click',function(){var inp=$('#t4s');
+  if(c.dataset.ins){inp.value+='√';inp.focus();applyS4(inp.value,false);return}
+  inp.value=c.dataset.v;applyS4(c.dataset.v,false)})});
+render4();
+
+/* ===== STASIUN 5: KONTEKSTUAL ===== */
+var S5={sc:'tangga',find:'diag',seen:[],v:{tangga:{a:4,b:5},layar:{a:6,b:8},lapangan:{a:8,b:6}}},svg5=$('#svg5');
+var SI={tangga:{sa:'Jarak',sb:'Tinggi',la:'Jarak kaki tangga',lb:'Panjang tangga',u:'m',a0:2,a1:10,b0:3,b1:15},layar:{sa:'Lebar',sb:'Tinggi',la:'Lebar layar',lb:'Tinggi layar',u:'inci',a0:2,a1:12,b0:2,b1:12},lapangan:{sa:'Panjang',sb:'Lebar',la:'Panjang lapangan',lb:'Lebar lapangan',u:'m',a0:2,a1:12,b0:2,b1:12}};
+function render5(){
+  var i=SI[S5.sc],v=S5.v[S5.sc],sa=$('#s5a'),sb=$('#s5b'),tg=S5.sc==='tangga',side=tg||S5.find==='side';
+  $('#find5wrap').style.display=tg?'none':'';
+  $$('#chips5f .chip').forEach(function(c){c.classList.toggle('sel',c.dataset.f===S5.find)});
+  var nm=tg?{a:'Jarak kaki tangga',b:'Panjang tangga',x:'Tinggi'}:side?{a:i.la,b:'Diagonal',x:i.lb}:{a:i.la,b:i.lb,x:'Diagonal'};
+  if(side&&v.b<=v.a)v.b=Math.min(v.a+1,15);
+  sa.min=i.a0;sa.max=i.a1;sb.min=side?3:i.b0;sb.max=side?15:i.b1;sa.value=v.a;sb.value=v.b;
+  $('#l5a').innerHTML=nm.a+' <span class="val">'+v.a+' '+i.u+'</span>';$('#l5b').innerHTML=nm.b+' <span class="val">'+v.b+' '+i.u+'</span>';
+  if(side){
+    var x=Math.sqrt(Math.max(v.b*v.b-v.a*v.a,0));
+    put(svg5,rightTri(v.a,x,{svg:svg5,wall:tg,u:'q',lp:tg?'Jarak':i.sa,lq:tg?'Tinggi':i.sb,lh:tg?'Tangga':'Diagonal',vp:v.a+' '+i.u,vq:fmt(x)+' '+i.u,vh:v.b+' '+i.u}));
+    $('#eq5').innerHTML='<div><span class="hi">Mencari sisi tegak</span></div><div>c² = a² + b²</div><div>b² = c² − a²</div><div>'+v.b+'² − '+v.a+'² = '+(v.b*v.b-v.a*v.a)+'</div><div class="big">'+nm.x.toLowerCase()+' = '+fmt(x)+' '+i.u+'</div><div class="mut">Semua sisi harus memakai satuan yang sama ('+i.u+').</div>';
+    $('#kv5').innerHTML='<div class="kv"><span>'+nm.b+' (c)</span><b>'+v.b+' '+i.u+'</b></div><div class="kv"><span>'+nm.a+' (a)</span><b>'+v.a+' '+i.u+'</b></div><div class="kv"><span>'+nm.x+' (b)</span><b>'+fmt(x)+' '+i.u+'</b></div>';
+  }else{
+    var d=Math.sqrt(v.a*v.a+v.b*v.b);
+    put(svg5,rightTri(v.a,v.b,{svg:svg5,u:'h',lp:i.sa,lq:i.sb,lh:'Diagonal',vp:v.a+' '+i.u,vq:v.b+' '+i.u,vh:fmt(d)+' '+i.u}));
+    $('#eq5').innerHTML='<div><span class="hi">Mencari sisi miring (diagonal)</span></div><div>c² = a² + b²</div><div>'+v.a+'² + '+v.b+'² = '+(v.a*v.a+v.b*v.b)+'</div><div class="big">c = √'+(v.a*v.a+v.b*v.b)+' = '+fmt(d)+' '+i.u+'</div><div class="mut">Semua sisi harus memakai satuan yang sama ('+i.u+').</div>';
+    $('#kv5').innerHTML='<div class="kv"><span>'+i.la+'</span><b>'+v.a+' '+i.u+'</b></div><div class="kv"><span>'+i.lb+'</span><b>'+v.b+' '+i.u+'</b></div><div class="kv"><span>Diagonal</span><b>'+fmt(d)+' '+i.u+'</b></div>';
+  }
+  var sh=shape5(),lg=sh.l,uu=i.u;
+  if(!sh.tri){var mm=Math.max(lg.p,lg.q);svg5.innerHTML='<polygon points="'+lg.p+',0 '+lg.p+','+-lg.q+' 0,'+-lg.q+'" fill="#ffd9a8" fill-opacity=".35" stroke="#c9a36b" stroke-width="'+mm/110+'" stroke-dasharray="'+mm/40+' '+mm/55+'"/>'+svg5.innerHTML}
+  $('#l5L').textContent='Luas ('+uu+'²)';$('#l5K').textContent='Keliling ('+uu+')';
+  if(document.activeElement!==$('#t5L'))$('#t5L').value=fmt(sh.L);
+  if(document.activeElement!==$('#t5K'))$('#t5K').value=fmt(sh.K);
+  $('#eq5').innerHTML+=sh.tri?'<div style="margin-top:6px">Luas = ½ × '+fmt(lg.p)+' × '+fmt(lg.q)+' = <b>'+fmt(sh.L)+' '+uu+'²</b></div><div>Keliling = '+fmt(lg.p)+' + '+fmt(lg.q)+' + '+fmt(lg.h)+' = <b>'+fmt(sh.K)+' '+uu+'</b></div>'
+    :'<div style="margin-top:6px">Luas = '+fmt(lg.p)+' × '+fmt(lg.q)+' = <b>'+fmt(sh.L)+' '+uu+'²</b></div><div>Keliling = 2 × ('+fmt(lg.p)+' + '+fmt(lg.q)+') = <b>'+fmt(sh.K)+' '+uu+'</b></div>';
+  $('#kv5').innerHTML+='<div class="kv"><span>'+(sh.tri?'Luas segitiga':'Luas')+'</span><b>'+fmt(sh.L)+' '+uu+'²</b></div><div class="kv"><span>Keliling</span><b>'+fmt(sh.K)+' '+uu+'</b></div>';
+  $$('#chips5 .chip').forEach(function(c){c.classList.toggle('sel',c.dataset.sc===S5.sc)});
+  $$('#chips5b .chip').forEach(function(c){c.classList.toggle('on',S5.seen.indexOf(c.dataset.sc)>=0)});
+  var n=$('#note5'),f=S5.seen.length;setSteps('#steps5',f>=3?5:f?3:2);
+  if(f>=3){n.className='note ok';n.innerHTML='✅ <b>Kesimpulan:</b> masalah jarak, panjang, atau diagonal diselesaikan dengan <b>c = √(a² + b²)</b> (mencari sisi miring) atau <b>b = √(c² − a²)</b> (mencari sisi tegak).';setDone('s5')}
+  else if(f){n.className='note warn';n.innerHTML='📌 Sudah mencoba <b>'+f+' dari 3</b> situasi. Coba situasi lainnya, dan ganti “yang dicari”.'}
+  else{n.className='note';n.innerHTML='Pilih situasi, atur ukurannya, lalu amati langkah menghitungnya. Coba ketiga situasi.'}
+}
+/* sisi siku-siku p, q dan sisi miring h pada keadaan sekarang */
+function legs5(){var v=S5.v[S5.sc],side=S5.sc==='tangga'||S5.find==='side';
+  if(side){var h=v.b,p=v.a;return {p:p,q:Math.sqrt(Math.max(h*h-p*p,0)),h:h}}
+  return {p:v.a,q:v.b,h:Math.sqrt(v.a*v.a+v.b*v.b)}}
+function shape5(){var l=legs5(),tri=S5.sc==='tangga';return {l:l,tri:tri,L:tri?l.p*l.q/2:l.p*l.q,K:tri?l.p+l.q+l.h:2*(l.p+l.q)}}
+function r2(x){return Math.round(x*100)/100}
+function setLegs5(p,q){var e=$('#e5');
+  if(!(p>0)||!(q>=0.1)||q>60||!isFinite(q)||!isFinite(p)||p>60){e.style.display='block';e.innerHTML='⚠️ Nilai itu tidak menghasilkan ukuran yang masuk akal (sisi harus positif dan tidak lebih dari 60). Coba nilai lain.';return false}
+  e.style.display='none';var v=S5.v[S5.sc],side=S5.sc==='tangga'||S5.find==='side';
+  v.a=r2(p);v.b=side?r2(Math.sqrt(p*p+q*q)):r2(q);seen5();render5();return true}
+function num5(id){var x=parseFloat($('#'+id).value.trim().replace(',','.'));return isNaN(x)||x<=0?null:x}
+function seen5(){if(S5.seen.indexOf(S5.sc)<0)S5.seen.push(S5.sc)}
+$$('#chips5 .chip').forEach(function(c){c.addEventListener('click',function(){S5.sc=c.dataset.sc;seen5();render5()})});
+$$('#chips5f .chip').forEach(function(c){c.addEventListener('click',function(){S5.find=c.dataset.f;seen5();render5()})});
+$('#s5a').addEventListener('input',function(){var v=S5.v[S5.sc];v.a=+this.value;if((S5.sc==='tangga'||S5.find==='side')&&v.b<=v.a)v.b=Math.min(v.a+1,15);seen5();render5()});
+$('#s5b').addEventListener('input',function(){var v=S5.v[S5.sc];v.b=+this.value;if((S5.sc==='tangga'||S5.find==='side')&&v.b<=v.a)v.b=Math.min(v.a+1,15);seen5();render5()});
+render5();
+/* ===== UKURAN KOLOM BISA DIUBAH (tarik pemisah, atau pakai panah kiri/kanan) ===== */
+var COL={c1:296,c3:300},mainEl=$('#main'),sd=null,rq=0;
+function rerenderActive(){var p=$('.panel.on'),id=p?p.id:'';
+  if(id==='p1')render1();else if(id==='p2')route2(false);else if(id==='p3')render3();else if(id==='p4')render4();else if(id==='p5')render5()}
+function reRender(){if(rq)return;rq=requestAnimationFrame(function(){rq=0;rerenderActive()})}
+function applyCols(){mainEl.style.setProperty('--c1',COL.c1+'px');mainEl.style.setProperty('--c3',COL.c3+'px')}
+function setCol(w,val){var room=1224-28-320;
+  if(w==='1')COL.c1=clamp(Math.round(val),200,room-COL.c3);else COL.c3=clamp(Math.round(val),200,room-COL.c1);
+  applyCols();reRender()}
+function mvS(e){if(!sd)return;var dx=(e.clientX-sd.x)*sd.k;setCol(sd.w,sd.w==='1'?sd.v+dx:sd.v-dx)}
+function upS(){if(sd)sd.el.classList.remove('drag');sd=null;window.removeEventListener('pointermove',mvS);window.removeEventListener('pointerup',upS);window.removeEventListener('pointercancel',upS)}
+mainEl.addEventListener('pointerdown',function(e){var sp=e.target.closest&&e.target.closest('.split');if(!sp)return;e.preventDefault();
+  sd={w:sp.dataset.s,x:e.clientX,v:sp.dataset.s==='1'?COL.c1:COL.c3,k:1280/stage.getBoundingClientRect().width,el:sp};sp.classList.add('drag');
+  window.addEventListener('pointermove',mvS);window.addEventListener('pointerup',upS);window.addEventListener('pointercancel',upS)});
+mainEl.addEventListener('keydown',function(e){var sp=e.target.closest&&e.target.closest('.split');if(!sp)return;
+  var d=e.key==='ArrowRight'?16:e.key==='ArrowLeft'?-16:0;if(!d)return;e.preventDefault();
+  if(sp.dataset.s==='1')setCol('1',COL.c1+d);else setCol('3',COL.c3-d)});
+mainEl.addEventListener('dblclick',function(e){if(!(e.target.closest&&e.target.closest('.split')))return;COL.c1=296;COL.c3=300;applyCols();reRender()});
+$$('.tab').forEach(function(t){t.addEventListener('click',reRender)});
+
+/* ===== STASIUN 5: isian manual luas / keliling ===== */
+$('#t5L').addEventListener('input',function(){var L=num5('t5L');if(L===null)return;var p=legs5().p;setLegs5(p,S5.sc==='tangga'?2*L/p:L/p)});
+$('#t5K').addEventListener('input',function(){var K=num5('t5K');if(K===null)return;var p=legs5().p,q;
+  if(S5.sc==='tangga')q=K>2*p?K*(K-2*p)/(2*(K-p)):-1;else q=K/2-p;setLegs5(p,q)});
+$('#btn5solve').addEventListener('click',function(){var L=num5('t5L'),K=num5('t5K'),e=$('#e5');
+  if(L===null||K===null){e.style.display='block';e.innerHTML='⚠️ Isi <b>luas</b> dan <b>keliling</b> dengan bilangan positif.';return}
+  var p,q;
+  if(S5.sc==='tangga'){var r=(K*K-4*L)/(2*K),sum=K-r,d=sum*sum-8*L;if(r<=0||d<0){e.style.display='block';e.innerHTML='⚠️ Luas dan keliling itu tidak dapat membentuk segitiga siku-siku.';return}
+    p=(sum-Math.sqrt(d))/2;q=(sum+Math.sqrt(d))/2}
+  else{var h=K/2,d2=h*h-4*L;if(d2<0){e.style.display='block';e.innerHTML='⚠️ Luas dan keliling itu tidak dapat membentuk persegi panjang.';return}
+    p=(h+Math.sqrt(d2))/2;q=(h-Math.sqrt(d2))/2}
+  setLegs5(p,q)});
+
+/* ===== TOMBOL ANIMASI ===== */
+$('#btn1play').addEventListener('click',function(){
+  if(S1.anim)return;if(S1.tool==='none'){S1.tool='sq';$$('#chips1 .chip').forEach(function(x){x.classList.toggle('sel',x.dataset.t==='sq')})}
+  S1.touched=true;S1.anim={t:0};var last=null;
+  (function f(ts){if(last===null)last=ts;S1.anim.t+=(ts-last)/1100*(RM?9:1);last=ts;if(S1.anim.t>=4){S1.anim=null;render1();return}render1();requestAnimationFrame(f)})(performance.now());
+});
+$('#btn2play').addEventListener('click',function(){var b=this,sl=$('#s2k');
+  if(!TM[b.id]){sl.value=1;$('#v2k').textContent=1;route2(false)}
+  toggleLoop(b,function(){var v=+sl.value;if(v>=6)return false;sl.value=v+1;$('#v2k').textContent=v+1;route2(false)},800)});
+$('#btn3play').addEventListener('click',function(){var b=this;
+  if(!TM[b.id]){set3(S3.a,S3.b,2);S3.touched=true;render3()}
+  toggleLoop(b,function(){if(S3.c>=20)return false;set3(S3.a,S3.b,S3.c+1);S3.touched=true;render3()},700)});
+$('#btn4play').addEventListener('click',function(){
+  if(S4.an)return;seen4();S4.an={t:0};var last=null;
+  (function f(ts){if(last===null)last=ts;S4.an.t+=(ts-last)/1200*(RM?9:1);last=ts;if(S4.an.t>=4){S4.an=null;render4();return}render4();requestAnimationFrame(f)})(performance.now());
+});
+$('#btn5play').addEventListener('click',function(){var b=this;
+  if(!TM[b.id]){S5.v[S5.sc].a=SI[S5.sc].a0;seen5();render5()}
+  toggleLoop(b,function(){var v=S5.v[S5.sc],i=SI[S5.sc];if(v.a>=i.a1)return false;v.a++;if((S5.sc==='tangga'||S5.find==='side')&&v.b<=v.a)v.b=Math.min(v.a+1,15);seen5();render5()},600)});
+$$('.tab').forEach(function(t){t.addEventListener('click',stopAll)});
+/* ===== AKSESIBILITAS & VALIDASI INPUT ===== */
+var nav=$('.tabs'),tabs=$$('.tab');nav.setAttribute('role','tablist');nav.setAttribute('aria-label','Stasiun eksperimen');
+tabs.forEach(function(t,i){
+  t.setAttribute('role','tab');t.id='tab-'+t.dataset.panel;t.setAttribute('aria-controls',t.dataset.panel);
+  t.setAttribute('aria-selected',t.classList.contains('on')?'true':'false');t.tabIndex=t.classList.contains('on')?0:-1;
+  t.addEventListener('click',function(){tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on?'true':'false');x.tabIndex=on?0:-1})});
+  t.addEventListener('keydown',function(e){var j=-1;if(e.key==='ArrowRight')j=(i+1)%tabs.length;else if(e.key==='ArrowLeft')j=(i+tabs.length-1)%tabs.length;if(j>=0){e.preventDefault();tabs[j].focus();tabs[j].click()}})});
+$$('.panel').forEach(function(p){p.setAttribute('role','tabpanel');p.setAttribute('aria-labelledby','tab-'+p.id)});
+var AL={s1a:'Sisi tegak a',s1b:'Sisi datar b',s2k:'Pengali k',s3a:'Sisi 1',s3b:'Sisi 2',s3c:'Sisi 3',s4:'Panjang acuan s',s5a:'Ukuran pertama',s5b:'Ukuran kedua',t2a:'Bilangan a',t2b:'Bilangan b',t2c:'Bilangan c',t4s:'Panjang s, angka atau akar',t5L:'Luas manual',t5K:'Keliling manual'};
+for(var ak in AL)$('#'+ak).setAttribute('aria-label',AL[ak]);
+['svg1','svg2','svg3','svg4','svg5'].forEach(function(id){$('#'+id).setAttribute('role','img');$('#'+id).setAttribute('aria-label','Kanvas simulasi segitiga')});
+$$('#chips1 .chip,#chips2 .chip,#chips3 .chip,#chips5 .chip,#chips5f .chip,#chips4 .chip').forEach(function(c){c.setAttribute('role','button');c.tabIndex=0;c.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();c.click()}})});
+['t2a','t2b','t2c'].forEach(function(id){$('#'+id).addEventListener('input',function(){
+  var bad=['t2a','t2b','t2c'].some(function(i){var v=$('#'+i).value.trim();return v!==''&&(!/^[0-9]+$/.test(v)||+v<1||+v>100)});
+  if(bad){var n=$('#note2');n.className='note bad';n.innerHTML='⚠️ Masukkan bilangan <b>bulat positif 1–100</b>. Nilai 0, negatif, atau desimal tidak dipakai dan diubah ke nilai terdekat.'}})});
+})();
+</script>
+</body>
+</html>
